@@ -17,4 +17,3 @@ use Data::Dump;
   print "fun package symbols: ".Data::Dump::pp(\%fun::)."\n";
   print "Love package symbols: ".Data::Dump::pp(\%Love::);
 }
-
