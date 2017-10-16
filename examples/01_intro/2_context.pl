@@ -23,3 +23,11 @@ print "$string\n";
 my $count = scalar @{ [qw(a b c)] };
 
 print "$count\n";
+
+my $var = "20";
+
+my $numeric = 0 + $var;    # forces numeric context
+
+my $string = '' . $var;    # forces string  context
+
+my $bool = !!$var;         # double-bang forces boolean context
