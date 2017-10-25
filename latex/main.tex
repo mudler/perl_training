@@ -1,0 +1,1246 @@
+\documentclass[10pt]{beamer}
+\usepackage{appendixnumberbeamer}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\usepackage{tikz}
+\usepackage{pgf}  
+\usepackage{hyperref}
+\usetheme{metropolis}
+
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+	backgroundcolor=\color{lbcolor},
+	tabsize=4,
+	rulecolor=,
+	language=perl,
+        basicstyle=\scriptsize,
+        upquote=true,
+        aboveskip={1.5\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+           % Line numbers
+    xleftmargin={0.75cm},
+    numbers=left,
+    stepnumber=1,
+    firstnumber=1,
+    numberfirstline=true,
+}
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+
+\usepackage{xspace}
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+
+\AtBeginSection[] % Do nothing for \section*
+{
+  \begin{frame}{Table of contents}
+  \tableofcontents[currentsection]
+    \setbeamertemplate{section in toc}[sections numbered]
+
+\\
+  \hfill
+  \ifnum \thesection=1
+  \includegraphics[scale=0.4]{images/perl_problems.png}
+  \else
+  \ifnum \thesection=2
+  \includegraphics[scale=2.4]{images/lisp.jpg}
+  \else
+  \ifnum \thesection=3
+  \includegraphics[scale=0.18]{images/regular_expressions.png}
+  \fi
+  \ifnum \thesection=4
+  \includegraphics[scale=0.2]{images/with_apologies_to_robert_frost.png}
+  \fi
+    \ifnum \thesection=5
+  \includegraphics[scale=0.3]{images/11th_grade.png}
+  \fi
+   \ifnum \thesection=6
+  \includegraphics[scale=0.3]{images/perl_oop.jpg}
+  \fi  
+    \ifnum \thesection=7
+  \includegraphics[scale=0.3]{images/bad_code_everywhere.jpeg}
+  \fi  
+    \ifnum \thesection=8
+  \includegraphics[scale=0.3]{images/disturbance_code.jpg}
+  \fi  
+    \ifnum \thesection=9
+  \includegraphics[scale=0.1]{images/if_this_code_would_work.jpg}
+  \fi  
+  \fi\fi
+
+  \end{frame}
+}
+
+
+\title{Perl Training}
+\subtitle{a journey to the most exotic language on Earth}
+\date{}
+\author{Ettore Di Giacinto - @mudler}
+\institute{SUSE}
+\titlegraphic{\vspace{0.6cm} \includegraphics[height=1.5cm]{theme_image/suse_logo.png}}
+
+\begin{document}
+\maketitle
+\begin{frame}[fragile]
+\begin{itemize}
+\item Material available @ \url{https://github.com/mudler/perl\_training}
+\item Modern Perl is an AWESOME reference - \url{http://modernperlbooks.com/books/modern_perl_2016/index.html}
+\item If you following the training with a laptop, install \verb Devel::REPL  ( \verb cpanm  \verb -n  \verb Devel::REPL     or   \verb zypper   \verb in   \verb perl-Devel-REPL , start it with: \verb re.pl  )
+\end{itemize}
+\end{frame}
+
+\section{Introduction}
+\begin{frame}[fragile]{Introduction - Ultra-fast Perl overview}
+    Pros:
+  \begin{itemize}
+      \item Huge library archive - CPAN
+      \item Extremely flexible language
+      \item Performs quite well to be interpreted
+      \item Lots of functionalities
+  \end{itemize}
+  
+  but\ldots cons:
+  
+    \begin{itemize}
+      \item TIMTOWTDI - good/bad thing
+      \item Lot of caveats
+      \item Difficult to deal when we want optimizations
+      \item Not all things from CPAN are good
+      \item Lots of functionalities\ldots which usage should be discouraged!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Introduction - The Life Cycle of a Perl Program}
+\begin{figure}
+    \centering
+    \includegraphics[width=6.5cm]{images/perl3_1801.png}
+    \caption{from https://docstore.mik.ua/orelly/perl3/prog/ch18\_01.htm}
+\end{figure}
+\vspace{-0.4cm}
+\begin{itemize}
+\item  The Compilation - Tree building (\textbf{use} and \textbf{no} declarations, Lexical declaration with no assigment. BEGIN are executed in FIFO, later interpreter is called again to re-evaluate CHECK blocks in LIFO)
+\item   The Code Generation Phase (optional) - if CHECK blocks where specified, Perl will generate intermediate C code (or Bytecode) compiling them so your machine can execute that image directly
+\item  The Parse Tree Reconstruction Phase (optional) - if Bytecode, then Perl needs to reconstruct the Parse tree before being able to execute
+\item Execution - The interpreter takes the parse tree and execute it.
+
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Introduction - Compiletime vs Runtime}
+\begin{figure}
+    \centering
+    \includegraphics[width=5cm]{images/phases.png}
+    \caption{source: https://www.effectiveperlprogramming.com/2011/03/know-the-phases-of-a-perl-programs-execution/}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Perl is well known for..}
+    \center \includegraphics[width=4cm]{images/Test_All_The_Things.png}
+\end{frame}
+
+
+\section{Context}
+
+\begin{frame}[fragile]{Perl - Context}
+Context is the only pivot of Perl. It was strongly inspired by human language: 'I want twenty bottle(s)' - 'I want one bottle', depending on the context you get what you ask for.
+
+Everything is subject to context: operators enforces context to operands, and expressions are evaluated by their context. So if we are forgetting about context, we are doing something wrong for sure.
+\begin{lstlisting}[language=perl]
+sub array_or_string { wantarray ? qw(1 2 3) : 3 }
+
+my @array  = array_or_string(); # yields 1 2 3 - list context
+my $string = array_or_string(); # gives 3 - scalar context
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl - Context}
+There are mainly 3 types of context in Perl:
+
+\begin{itemize}
+    \item Scalar context
+    \item List context
+    \item void context
+\end{itemize}
+
+Void context is a special case of Scalar context.
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl - Context}
+\begin{lstlisting}[language=perl,caption={Full example at examples/01\_intro/1\_context.pl},captionpos=b]
+sub array_or_scalar_or_void {
+       !defined wantarray ? print "Void context\n"
+      : wantarray         ? qw(1 2 3)
+      :                     3;
+}
+
+my @array  = array_or_scalar_or_void(); # yields 1 2 3 - list context
+my ($one, $two)  = array_or_scalar_or_void();
+my ($one, $two, undef)  = array_or_scalar_or_void(); 
+my $three = array_or_scalar_or_void(); # returns 3 - scalar context
+
+array_or_scalar_or_void; # will print "Void context".
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Perl - ``Value'' Context}
+Even if Perl gives the possibility to not specify what a scalar can contain, some operators can enforce context.
+\begin{lstlisting}[language=perl]
+my $number = 42;
+my $string = "Foo";
+
+$number    == 42;
+
+$string    == 'Foo'; # In numeric context, strings evaluate to 0 (Numeric Coercion)
+$string    eq 'Foo'; # eq enforces string context
+\end{lstlisting}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Perl - Force ``Value'' Context}
+
+\begin{lstlisting}[language=perl]
+my $var     = "20";
+
+my $numeric = 0 + $var;  # forces numeric context
+
+my $string  = '' . $var;  # forces string  context
+
+my $bool    = !!$var;  # double-bang forces boolean context
+
+
+my $string = "43 Boo";
+
+$string--;
+
+print "$string\n"; # Prints '42'
+
+my $result = (2**2 + 38) . " is the answer";
+\end{lstlisting}
+
+\end{frame}
+\section{Perl Data Structures}
+
+\begin{frame}[fragile]{Introduction - Perl Data structures - Overview}
+  Perl is a pecularial language, and have different kinds of data structures from other languages, and are prefixed with sigils ( \textbf{\$}, \textbf{@}, \textbf{\%}, \textbf{\*} \textbf{\&} ) :
+  
+  \begin{itemize}
+      \item SCALAR - \textbf{\$}
+      \item ARRAY - \textbf{@}
+      \item HASH -  \textbf{\%}
+      \item CODE -  \textbf{\&}
+      \item GLOB  \textbf{\*} / Symbols - the meta-data type.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Data structures - Overview}
+
+\begin{lstlisting}[language=perl]
+my $var = "foo"; $var = "1"; $var = 1 # Always scalar
+
+my @var = ('var'); # array
+
+my %var = (bla => boo); # hash
+
+sub { 1 } # code
+
+*var = \"bar" # Glob - ignore it for now
+\end{lstlisting}
+
+  it is only the context holding them together \ldots
+\end{frame}
+
+
+\begin{frame}[fragile]{Perl Data structures - Basic operations}
+\begin{table}[]
+\centering
+\caption{Even if Perl doesn't distinguish between number or string, it has different operators for the data that the scalar holds}
+\label{operators}
+\begin{tabular}{lll}
+\hline
+{\color[HTML]{2F5361} \textbf{Comparison}} & {\color[HTML]{2F5361} \textbf{Numeric}} & {\color[HTML]{2F5361} \textbf{String}} \\ \hline
+Equal                                      & ==                                      & eq                                     \\ \hline
+Not Equal                                  & !=                                      & ne                                     \\ \hline
+Less Than                                  & \textless                               & lt                                     \\ \hline
+Greater Than                               & \textgreater                            & gt                                     \\ \hline
+Less Than or Equal To                      & \textless=                              & le                                     \\ \hline
+Greater Than or Equal To                   & \textgreater=                           & ge                                     \\ \hline
+\end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Data structures - Basic operations}
+While declaring strings, you may want to enclose it in double or single quote:
+\begin{lstlisting}[language=perl]
+my $a  = 'foo';
+my $b  = "bar";
+$a = 'it\'s awesome!';
+my $c = 'ends with a backslash, not a quote: \\';
+
+# Double quote forces perl to encode
+my $tab       = "\t"; 
+my $newline   = "\n";
+my $carriage  = "\r";
+my $backspace = "\b";
+
+# Interpolation of scalar
+my $assertion = "$b $a"; # bar it's awesome!
+
+# qq -> double quotes, q -> single quotes - accepts delimiter 
+my $doublequote         = qq{"What the hell" said him};
+my $singlequote         =  q^no need to escape "'" !^;
+my $different_delimiter =  q{Different delimeters};
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl Data structures - Basic operations}
+Access to nested elements
+\begin{lstlisting}[language=perl]
+my @AoA = (
+         [ "foo", "bar" ],
+         [ "baz", "geeko", "test" ],
+);
+print $AoA[1][1];   # prints "geeko"
+print $AoA[1]->[1];   # same - more clear
+
+my $ref_AoA = [
+         [ "foo", "bar" ],
+         [ "baz", "geeko", "test" ],
+];
+
+print $ref_AoA->[1][1];   # prints "geeko"
+print $ref_AoA->[1]->[1];   # same 
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Perl Data structures - Basic operations, contd. }
+
+\begin{lstlisting}[language=perl]
+sub access { print shift()."\n" }
+
+access(qw( geeko isnotvisible ));
+
+my @array = qw(geeko is on vacation);
+
+print "@array[1..2]\n"; # Watch out the context! - prints is on
+
+print @array[1..2]."\n"; # This doesn't do what it's expected!
+
+print shift(@array)."\n"; # prints geeko, and removes it from @array
+
+print pop(@array)."?\n"; # prints 'vacation?'
+
+@array = qw(geeko is on vacation);
+
+print splice(@array, 0, 1)."\n"; # prints 'geeko' and removes it (behaves like shift)
+print "@array\n"; # prints 'is on vacation'
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Data structures - Basic operations, contd.}
+\begin{lstlisting}[language=perl]
+sub access { print shift()."\n" }
+
+my @array = qw(geeko is on vacation);
+access(@array);
+
+print "@array\n"; # unchanged - prints 'geeko is on vacation'
+
+sub access { print shift(@{$_[0]})."\n" } # prints and removes the first element of arrayref
+
+@array = qw(geeko is on vacation);
+access(\@array);
+
+print "@array\n"; # prints now 'is on vacation'
+
+access([@array]); # prints 'is'
+
+print "@array\n"; # prints still 'is on vacation'
+
+unshift @array, 'geeko';
+
+print "@array\n"; # prints 'geeko is on vacation'
+\end{lstlisting}
+\end{frame}
+
+\section{Killing old myths}
+
+\begin{frame}[fragile]{Killing old myths}
+
+Perl have a lot of linguistic shortcuts:
+\begin{lstlisting}[language=perl,caption={extract of an adaptation for Perl5 by ovid of ``Black Perl'' poem written by Larry Wall},captionpos=b]
+BEFOREHAND: close door, each window & exit; wait until time.
+     open spellbook, study, select it, confess, tell, deny;
+write it, print the hex while each watches,
+     reverse "its length", write again;es,
+     values aside, each one;
+          die sheep, die, reverse system
+          you accept (reject, respect)
+     kill spiders, pop them, chop, split, kill them.
+          unlink arms, shift, wait & listen (listening, wait),
+sort the flock (then, warn "the goats". kill "the sheep");
+     kill them, dump qualms, shift moraliti;
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - \$\_}
+\textbf{\$\_ }is by definition the \textit{default scalar variable} or, called also \textit{topic variable}. 
+You notice it when a variable is absent. \textbf{\$\_} is the English equivalent of \textit{it}.
+\begin{lstlisting}[language=perl]
+use feature 'say';
+
+# Equivalent:
+chomp $_;
+chomp;
+
+# If you don't specify a variable, $_ is implied
+print;
+say;
+s/boo/moo/;
+
+say for qw(1 2 3);
+
+say for map { $_ * $_ } 1 .. 5;
+say for grep { /awesome/ } qw(awesome sad);
+say for grep { /awesome/ } map { $_." is awesome" } qw(Perl bar);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Killing old myths - @\_}
+
+\textbf{@\_ } inside functions, is the copy of the values passed to the function. Is the English equivalent of \textit{them}.
+\begin{lstlisting}[language=perl]
+sub example  { print "@_\n"; }
+sub example2 { print shift."\n"; }
+
+example  qw(This is an example);
+example2 qw(Only first element will be printed);
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - undef}
+
+Undef represent unassigned, undefined or not known value. Variables that are declared contain undef.
+
+\begin{lstlisting}[language=perl]
+    my $var = undef;   # Not necessary
+    my $var;           # both are undef
+\end{lstlisting}
+
+In boolean context, undef it's false. Common mistake:
+
+Evaluating undef in string context (e.g. interpolation);
+\begin{lstlisting}[language=perl]
+    my $undefined;
+    my $text = $undefined . ' bla ';
+#Yields the classic: 
+#    Use of uninitialized value $undefined in
+#    concatenation (.) or string...
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - ()}
+
+Empty list in scalar context evaluates undef, but in list context represent an empty list.
+Consider this code:
+\begin{lstlisting}[language=perl]
+my $count = () = @array;
+\end{lstlisting}
+
+The assigment to context list gets rid of the values in list context, but the assignment is done in scalar context( \verb $count  ) such as it's evaluated to the number of items, and  the variable holds  the number of items in the array.
+\end{frame}
+
+
+\section{References}
+
+\begin{frame}[standout]
+\begin{center}
+\huge YES! we have pointers!
+\ldots or something that looks similar to them
+\end{center}
+\begin{center}
+\ldots not like Python \ldots
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Pointers in Perl - References}
+
+Perl does not need variables. We use them to help ourselves, we can still refer to contents only with references. References can be accessed by using `\verb \ '
+
+\begin{lstlisting}[language=perl]
+my $arrayref  = \@array;
+my $hashref   = \%hash;
+my $scalarref = \$var;
+\end{lstlisting}
+
+Note, you can use `\verb \ '  also to get reference of inline-declared scalars:
+
+\begin{lstlisting}[language=perl]
+my $scalarref = \"still valid";
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Pointers in Perl - References}
+Dereferencing is the act of getting the real value out of the reference. \newline
+As always in Perl, \textbf{TIMTOWTDI}.
+\begin{lstlisting}[language=perl]
+my $hashref = { foo => 'bar' } # Reference to inline declared hash
+
+print ${$hashref}{foo}."\n";   # Will print 'bar'
+print $$hashref{foo}."\n";     # this too
+print $hashref->{foo}."\n";    # this as well
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Pointers in Perl - References}
+
+
+There is no general rule for deferencing, but as Perl is context dependent, as a rule of thumb you usually force a sigil context to dereference the variable type.
+\begin{lstlisting}[language=perl]
+my $arrayref = [qw( one two tree )]; # Reference to inline array
+
+print join(" ", @{$arrayref})."\n";   # Will print 'one two tree'
+
+my $scalarref = \"foo"; # Reference to inline scalar
+print $$scalarref."\n";   # Will print 'one two tree'
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Pointers in Perl - References and Context}
+A good example is Hash slicing. Which is just forcing dereferencing a hash into an array of their values, so you can perform operations directly on the hash. It can be seen as a combination of forcing array dereferencing on part of the hash while imposing list context.
+
+\begin{lstlisting}[language=perl]
+my $hashref = { test => { 1 => 1, 2 => 2, 3 => 3} };
+@{$hashref->{test}}{qw(1 2 3)} = qw(4 5 6);
+# ^^^ context forced to array.
+
+my %test = (1 => 1, 2 => 2, 3 => 3);
+# ^^^ context forced to hash
+@test{qw(1 2 3)} = qw(4 5 6);
+
+# Stolen from OpenQA :)
+@{$job->{settings}}{keys %$worker_settings} = values %$worker_settings; # BAD!
+# Can you tell why this example *works* but it is a bad practice?
+\end{lstlisting}
+
+
+\end{frame}
+
+
+\section{Perl Objects (Moo, Moose, Mojo::Base, MOP, \ldots)}
+
+\begin{frame}[fragile]{Perl Objects - Introduction}
+Perl has a large number of libraries giving out Object system in a OOTB fashion:
+\begin{itemize}
+\item Moo
+\item Moose
+\item MOP
+\item Mojo::Base
+\item Class::* (Rabbit hole)
+\item even I had my own implementation based off on Mojo::Base
+\item \ldots you name it
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Objects - Introduction}
+What is MOP?
+\begin{itemize}
+\item Meta-Object Protocol
+\item API on top of Object 
+\item Abstraction to normal Object model, yielding to the Reflective property
+\end{itemize}
+Why Perl have so many object implementation, and why everything is so complicated?
+\begin{itemize}
+\item TIMTOWTDI lead to a lot of implementations
+\item Every developer grabbed "something new" from other OOP Model
+\item Unsatisfaction with general state of OOP in Perl
+\item Official MOP proposals have been attempted already to land in Perl 5, but never happened.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Objects - Introduction}
+OOP State in Perl, key points:
+\begin{itemize}
+\item Packages != Objects
+\item Packages can bring Objects to you
+\item Basic OOP in Perl allows you to construct your own OOP Model
+\item Perl is not hiding nothing to you
+\item DO NOT create Packages that are named all lowercase (reserved to perl pragmas), or all uppercase (Built-in types)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Objects - Are not packages!}
+Packages are Namespaces that represents a group of symbols that can be identified by its name.
+Example: \verb Foo::Bar::Baz   or   \ver  Bar::Baz::Foo  - This does not mean any form of inheritance or protection, it's just to identify namespaces, so any package can access other package symbols.
+
+Inside a Namespace, you can refer to inner by not using the fully qualified name, but it's needed outside.
+
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Perl Packages - Are not objects!}
+The scope of a variable determine the accessibility of that variable.
+Scopes are determined by Files, by packages thru lexical scopes as you can create new ones by using curly brackets \verb { \verb }
+
+\begin{lstlisting}[language=perl]
+...
+    package Baz::Bar;
+
+    my $bar = 'foo'; # Can be only accessed in this context
+    # not e.g. modified using fully qualified name $Baz::Bar::bar
+
+    package Baz:Foo;
+
+    # $bar still same
+...
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}{Package modules}
+
+What makes a package inherit methods from another one?
+
+\begin{alertblock}{ISA}
+Eeach package contains a special array called \textbf{ISA}. The \textbf{ISA} array contains a list of that class's parent classes, if any. This array is examined when Perl does method resolution.
+\end{alertblock}
+
+Let's have a look on the fundamentals of OOP now.
+\end{frame}
+
+\begin{frame}[fragile]{Perl Objects - Introduction}
+Everything starts with the \textbf{bless} keyword.
+\begin{lstlisting}[language=perl]
+bless REF,CLASSNAME
+\end{lstlisting}
+
+From Perldoc:
+
+"This function tells the \textbf{thingy} referenced by REF that it is now an object in the CLASSNAME package" - Thus everything can be ``Objectified'' :)
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Perl Objects - Introduction}
+Bless is just marking the reference belonging to a Package, thus inheriting the functions (Note: \textbf{new()} constructor  is just a convention ).
+\begin{figure}
+    \centering
+    \includegraphics[width=6cm]{images/blessing.png}
+    \caption{from: Damian Conway's Bless My Referents}
+    \label{fig:bless}
+\end{figure}
+
+That means that a function of a package can return a blessed reference of the type of the Package (thus inheriting functions).
+\end{frame}
+\begin{frame}[fragile]{Perl Objects - Introduction}
+
+Example Package that offer it's Objectified veriant:
+\begin{lstlisting}[language=perl]
+{
+package Foo;
+sub new() { bless {}, 'Foo' } # bless {} is equivalent
+sub newBar() { bless {}, 'Bar' }
+1;
+};
+{
+package Bar;
+
+sub printer { shift; print "@_\n" }
+
+!!42;
+};
+my $foo = Foo->new();
+my $bar = Foo->newBar();
+my $bar2 = $foo->newBar();
+Foo->newBar()->printer("Hello");
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl Objects - Mojo::Base}
+
+\verb Mojo::Base    object type.
+\begin{lstlisting}[language=perl]
+{
+package Cat;
+use Mojo::Base -base;
+ 
+has name => 'Nyan';
+has ['age', 'weight'] => 4;
+} 
+
+{
+package Tiger;
+use Mojo::Base 'Cat';
+ 
+has friend  => sub { Cat->new }; # Lazy-loaded if no value is set!
+has stripes => 42;
+} 
+# ...
+my $mew = Cat->new(name => 'Longcat');
+say $mew->age;
+say $mew->age(3)->weight(5)->age;
+\end{lstlisting}
+
+\end{frame}
+ 
+ \section{Map fun}
+ 
+ \begin{frame}[fragile]{Map fun - Schwartzian Transform}
+The first known online appearance of the Schwartzian Transform is a December 16, 1994 posting by Randal Schwartz.
+
+How to sort this list by last name?
+
+\begin{lstlisting}
+ adjn:Joshua Ng
+ adktk:KaLap Timothy Kwong
+ admg:Mahalingam Gobieramanan
+ admln:Martha L. Nangalama
+\end{lstlisting}
+
+
+\end{frame}
+
+
+ \begin{frame}[fragile]{Map fun - Schwartzian Transform}
+ 
+ \begin{itemize}
+     \item Lisp roots
+     \item Compact transformation
+     \item Caches expensive calculations
+     \item Variables can be elided
+     \item Pipeline of map-sort-map transforms a data structure into another form easier for sorting and then transforms it back into the first — or another — form 
+ \end{itemize}
+ 
+ We have then to sort the list by it's values, not by the keys\ldots
+ \end{frame}
+
+
+ \begin{frame}[fragile]{Map fun - Schwartzian Transform}
+ 
+ Let's assume that we have parsed the list before as a hash (optional, but makes easier to read)
+ 
+\begin{lstlisting}[language=perl]
+my %name_list = (
+    'adjn:Joshua Ng' => 'Ng',
+    'adktk:KaLap Timothy Kwong' => 'Kwong',
+    'admg:Mahalingam Gobieramanan' => 'Gobieramanan',
+    'admln:Martha L. Nangalama' => 'Nangalama',
+);
+
+# So, by instinct you would do:
+my @sorted_names = sort values %name_list;
+# But we want to preserve the data, and not to have only an array of values.
+\end{lstlisting}
+ \end{frame}
+
+
+ \begin{frame}[fragile]{Map fun - Schwartzian Transform}
+ 
+ Let's  first convert the hash into a list of data structures that will keep  the information, and will also allow us to sort it easier:
+\begin{lstlisting}[language=perl]
+ my @data = map  { [ $_, $name_list{$_} ] } keys %name_list;
+\end{lstlisting}
+Then we sort it by the hash value contained in that array:
+\begin{lstlisting}[language=perl]
+    my @sorted_data = sort { $a->[1] cmp $b->[1] } @data;
+\end{lstlisting}
+\begin{alertblock}{sort}
+The code block supplied to sort receives arguments in \verb $a  and   \verb $b , that are package-scoped variables.. (See perldoc -f sort) 
+\end{alertblock}
+ \end{frame}
+
+
+ \begin{frame}[fragile]{Map fun - Schwartzian Transform}
+
+The cmp operator performs string comparisons and the <=> performs numeric comparisons. Now we put the data in a form that we use it to display:
+\begin{lstlisting}[language=perl]
+my @display_data = map { "$_->[1], ext. $_->[0]" } @sorted_data;
+\end{lstlisting}
+thus, the whole operation can be shortened as:
+\begin{lstlisting}[language=perl]
+say for
+    map  { " $_->[1], ext. $_->[0]"          }
+    sort {   $a->[1] cmp   $b->[1]           }
+    map  { [ $_      =>    $name_list{$_} ] }
+    keys %name_list;
+\end{lstlisting}
+
+Reading from right to left: For each key in the hash create an anonymous array of two items containing the key and the value, then sort the list of arrays by their second element - Then format the string.
+\pause
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=3cm,yshift=-3.5cm] at (current page.north west){
+    \includegraphics[width=4cm]{images/deleted_code.jpg}};
+\end{tikzpicture}
+
+\end{frame}
+
+
+\section{Idioms}
+\begin{frame}[fragile]{Idioms}
+
+Idioms and common patterns can be found in any language.
+\item
+Perl may have too many of them.
+
+Perl has idioms, some of them are neat, some of them looks like casting spells. They are actually language features and design techniques - makes your code look ``Perlish''.
+ You don't need them, but they leverage Perl features to get the job done  :)
+
+\end{frame}
+
+\begin{frame}[fragile]{Idioms}
+Some of them are common rules:
+
+\begin{itemize}
+    \item Object are represented (inside methods) as \verb $self
+    \item Named Parameters prefered vs anonym ones e.g. \verb func(option=>1,option2=>2)
+    \item Hash or Hash Ref? To avoid odd sized list to be interpreted as Hash, better Hashrefs (also for inspection).
+\end{itemize}
+
+Some of them are driven by design - we will look at few examples of them.
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Idioms - Globs - Automa(g/t)ic assignment }
+
+\begin{lstlisting}[language=perl]
+
+*var = \"test";                      
+ 
+no strict 'refs';
+
+print ${*{"var"}{SCALAR}}."\n";    
+
+\end{lstlisting}
+\pause
+
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=2cm] at (current page.south east){
+   \includegraphics[width=5cm]{images/dafuq-IS-THAT-meme-8770.jpg}};
+\end{tikzpicture}
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Idioms - Context}
+
+Being able to manipulate and force context, allows us to have few tricks:
+\begin{lstlisting}[language=perl]
+my $count = ()= @array; # Forces list context
+my $count = scalar @array; # Forces scalar context
+my $one = (qw(1 2 3))[0]; # Force list context and retrieve an element in array
+
+my $string = '42 is the right answer';
+my $back_to_number =0+ $string;  # 42 (Venus operator)
+$string--; # $string now is 41
+my $bangbang     = !!$string;  # 1
+
+@{[ qw(1 2 3) ]}; # Baby cart operator
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Idioms - Context - extra }
+
+And always thanks to Perl context fun, we can create arrays or hashes based on variable options easily:
+
+\begin{lstlisting}[language=perl]
+my $dog = 1; # Try to flip them!
+my $cat = 1;
+my @array = (
+    ('wof') x !!($dog),
+    ('meow') x !!($cat)
+);
+
+$dog = 1;
+$cat = 1;
+my %hash = (
+    (wof => $dog) x !!($dog),
+    (meow => $cat) x !!($cat)
+);
+
+\end{lstlisting}
+
+$x$ is the string multiplicator, and the double bang ( \textbf{!!} ) reduces the expression in the right to a boolean.
+
+\end{frame}
+
+
+\section{Common pitfalls}
+\begin{frame}[fragile]{Common pitfalls}
+To not break version compatibility, Perl still supports very old syntax.
+
+\begin{lstlisting}[language=perl]
+# outdated style; avoid
+my $result = &calculate_result( 52 );
+# very outdated; truly avoid
+my $result = do &calculate_result( 42 );
+\end{lstlisting}\cite{2016modern}
+
+\begin{itemize}
+    \item Disables prototypes
+    \item It passes \verb @_  if no arguments  are specified
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Common pitfalls}
+Making a good usage of parenthesis, it helps both Perl and you.
+\begin{lstlisting}[language=perl]
+nasty_func weird_func 4, @array, 'Postfix';
+\end{lstlisting}
+
+\begin{itemize}
+    \item Perl heuristics can be confusing
+    \item \verb weird_func will gobble up everything.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Common pitfalls}
+\verb ==   it's different from \verb eq  and the relationship with them can be somewhat confusing.
+
+\verb eq can work both on numbers and on string - this only because stringification can be infered on numbers.
+
+\begin{lstlisting}[language=perl]
+say "It's true!" if "Boo" == "Baaz"; # Throws a worning, but will always work
+# while, 'eq' still works on numbers, because string representation of numbers can be easily infered
+say "Works" if 2 eq 2;
+\end{lstlisting}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Common pitfalls - Memory Leaking}
+Perl has a garbage collector, that reaps the references that are not anymore in scope,  calling \textbf{DESTROY} method on them.
+Due to this design, it's possible to have memory leaking.
+How it is possible?
+What happens in circular reference scenarios?
+
+\end{frame}
+
+\begin{frame}[fragile]{Common pitfalls - Identify memory leaking code}
+Consider this code snippet:
+\begin{lstlisting}[language=perl]
+sub circular_ref {
+	my $a;
+	my $b;
+
+	$a->{b} = \$b;
+	$b->{a} = \$a;
+}
+
+circular_ref() for 1..100000;
+\end{lstlisting}
+
+Will be able the Perl \textbf{GC} to reap all the unused memory? - short answer, NO!
+\pause
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=3cm,yshift=-3.5cm] at (current page.north west){
+    \includegraphics[width=4cm]{images/bad_code_everywhere.jpeg}};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Common pitfalls - Avoid to leak memory in your code!}
+Use weaken to escape to circular references, so GC doesn't loop while trying to clean up the references out of scope.
+
+
+\begin{lstlisting}[language=perl]
+use Scalar::Util 'weaken';
+
+sub circular_ref {
+	my $a;
+	my $b;
+
+	$a->{b} = \$b;
+	$b->{a} = \$a;
+	weaken $b->{a};
+}
+
+circular_ref() for 1..100000;
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Common pitfalls - Analyze Code that may leak}
+Wrap the statement that you think could leak memory with \verb Memory::Usage.
+\begin{lstlisting}[language=perl]
+use Memory::Usage;
+
+my $mu = Memory::Usage->new();
+my $mu_w = Memory::Usage->new();
+
+$mu_w->record('before');
+
+circular_ref() for 1..100000;
+
+$mu_w->record('after');
+
+$mu_w->dump();
+
+sub circular_ref {
+	my $a;
+	my $b;
+
+	$a->{b} = \$b;
+	$b->{a} = \$a;
+}
+\end{lstlisting}
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Common pitfalls - Analyze Code that may leak}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=9cm]{images/mem_leak.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Importing}
+The Perl \textbf{use} built-in call automatically the \verb import() function on the class that is supplied. Modules then, can provide their own import that can make visible to the caller some or all functions in it's Package scope. 
+
+So:
+
+\begin{lstlisting}[language=perl]
+use strict; # strict->import();
+use foo; # foo->import();
+use bar; # bar-import();
+use strict 'refs'; # strict->import('refs');
+use strict qw(subs vars); # strict->import('subs','vars');
+\end{lstlisting}
+\pause
+So this has the same effect :
+
+\begin{lstlisting}[language=perl]
+BEGIN {
+    require strict;
+    strict->import( 'refs' );
+}
+\end{lstlisting}
+
+But strict is a pragma, which is another world, with other effects.
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - Exporter}
+At this point - the role of Exporter should be a bit more easier to gasp. 
+
+\begin{itemize}
+    \item The \textbf{use} pragma is calling \verb import()  functions on the Specified class
+    \item The \verb import()  function can do virtually \textit{anything}
+    \item it is done in Compile time, so Perl can parse the tree and do not throw odd errors - like bareword key not found
+    \item \ldots so if we define an import() in our package, we could emulate Exporter's behavior!
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - Exporter}
+We now have all the elements to implement our own Exporter module.
+
+Of course, we can also use it without having to inherit from it, or we can also use Exporter's functionalities without inheriditing from the Class.
+
+So if we want to export some functions with Exporter:
+
+\begin{lstlisting}[language=perl]
+package Foo;
+our @EXPORT_OK = qw(baz);
+use base Exporter; # Do not use base! and it's Not needed!  This will just inherit the Exporter import(), the only thing needed to make it work.
+use parent Exporter; # Again, do not need to inherit completely from it.
+use Exporter 'import'; # Compact and exactly what it's just needed! Exporter's import();
+\end{lstlisting}
+
+Exporter \verb import() is looking into \verb @EXPORT_OK   and in \verb @EXPORT   for functions to export into the caller's namespace. 
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - CustomExporter}
+
+How hard than can be to replicate the Exporter's functionalities? \\
+
+
+Can't we make our own Exporter as well? 
+
+\pause
+
+\textbf{Yes we can!}
+
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=2.5cm] at (current page.south east){
+    \includegraphics[width=4cm]{images/challenge-accepted.jpg}};
+\end{tikzpicture}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Killing old myths - CustomExporter}
+Let's try now to add capabilities to an our package to export all symbols into the Packages that will load it on compile phase. \\
+\pause
+
+Our Package then should have an import method, that will take care of exportng all the desired functions into the caller namespace. Will look something like this:
+\begin{lstlisting}[language=perl]
+package CustomExporter;
+use strict;
+
+sub import {
+    no strict 'refs';
+    do {
+        next if not defined *{$CustomExporter::{$_}}{CODE}              or $_ eq 'import';
+        *{caller() . "::$_"} = \&{"CustomExporter::$_"};
+    } for keys %CustomExporter::;
+}
+\end{lstlisting}
+
+\pause
+
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=2cm] at (current page.south east){
+    \includegraphics[width=5cm]{images/dafuq-IS-THAT-meme-8770.jpg}};
+\end{tikzpicture}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - CustomExporter}
+
+Our Commented and cleaned Exporter:
+\begin{lstlisting}[language=perl]
+package CustomExporter;
+use strict;
+
+sub import {
+    my $pkg = caller; # who's calling us?
+    no strict 'refs'; # Avoid strict to be dushbag with symbolic dereference
+    
+    foreach my $glob (keys %CustomExporter::) { # Get all meta data-types in the package
+        next if not defined *{$CustomExporter::{$glob}}{CODE} # We want to put in caller only functions
+                or $glob eq 'import'; # But not import itself
+
+        *{$pkg . "::$glob"} = \&{"CustomExporter::$glob"}; # Create a glob for the package.
+	# Note, this is a bit magical, since globs can inference the assigned type.
+    }
+}
+\end{lstlisting}
+
+\pause
+
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=2cm] at (current page.south east){
+    \includegraphics[width=5cm]{images/what_i_did_Wrong.jpg}};
+\end{tikzpicture}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Killing old myths - OOP - Liskov}
+
+The Liskov substitution principle suggest that an object should be as more general as possible with the expectations, and at least as specific about what it produces as the object it replaces.
+
+What this means? 
+Suppose we have two classes:
+\begin{lstlisting}[language=perl]
+{
+package Fruit;
+# ... object implementation
+}
+{
+package Apple;
+use parent Fruit;
+# ... object implementation
+}
+\end{lstlisting}
+The Liskov principle enforces objects design. To satisfy the Liskov principle, in a testsuite we should be able to replace Apple with Fruit, without the need of further changes.
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Killing old myths - Easy File Slurping}
+
+local is essential to managing Perl's magic global variables. Scoping is important to use local effectively—but if you do, you can use tight and lightweight scopes in interesting ways. For example, to slurp files into a scalar in a single expression:
+\begin{lstlisting}[language=perl]
+
+    my $file = do { local $/; <$fh> };
+
+    # or
+    my $file; { local $/; $file = <$fh> };
+    
+    \end{lstlisting}
+
+    \begin{alertblock}{\$/}
+    \$/ is a string of zero or more characters which denotes the end of a record when reading input a record at a time. By default, this is your platform-specific newline character sequence. See Modern perl for a complete reference
+    \end{alertblock}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{\ldots}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=6cm]{images/code_review.jpg}
+\end{figure}
+
+\end{frame}
+
+
+% XXX: Fill all references
+\begin{frame}[allowframebreaks]{References}
+
+  \bibliography{bib}
+  \bibliographystyle{abbrv}
+\end{frame}
+
+
+%\begin{frame}[allowframebreaks]
+
+%\end{frame}
+
+\end{document}

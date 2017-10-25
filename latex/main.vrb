@@ -1,0 +1,23 @@
+\frametitle{Perl - Context - extra }
+
+And always thanks to Perl context fun, we can create arrays or hashes based on variable options easily:
+
+\begin{lstlisting}[language=perl]
+my $dog = 1; # Try to flip them!
+my $cat = 1;
+my @array = (
+    ('wof') x !!($dog),
+    ('meow') x !!($cat)
+);
+
+$dog = 1;
+$cat = 1;
+my %hash = (
+    (wof => $dog) x !!($dog),
+    (meow => $cat) x !!($cat)
+);
+
+\end{lstlisting}
+
+$x$ is the string multiplicator, and the double bang ( \textbf{!!} ) reduces the expression in the right to a boolean.
+
