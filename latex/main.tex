@@ -4,7 +4,7 @@
 \usepackage{color}
 \usepackage{textcomp}
 \usepackage{tikz}
-\usepackage{pgf}  
+\usepackage{pgf}
 \usepackage{hyperref}
 \usetheme{metropolis}
 
@@ -72,16 +72,16 @@
   \fi
    \ifnum \thesection=6
   \includegraphics[scale=0.3]{images/perl_oop.jpg}
-  \fi  
+  \fi
     \ifnum \thesection=7
   \includegraphics[scale=0.3]{images/bad_code_everywhere.jpeg}
-  \fi  
+  \fi
     \ifnum \thesection=8
   \includegraphics[scale=0.3]{images/disturbance_code.jpg}
-  \fi  
+  \fi
     \ifnum \thesection=9
   \includegraphics[scale=0.1]{images/if_this_code_would_work.jpg}
-  \fi  
+  \fi
   \fi\fi
 
   \end{frame}
@@ -92,7 +92,7 @@
 \subtitle{a journey to the most exotic language on Earth}
 \date{}
 \author{Ettore Di Giacinto - @mudler}
-\institute{SUSE}
+\institute{SUSE/Gentoo/Sabayon}
 \titlegraphic{\vspace{0.6cm} \includegraphics[height=1.5cm]{theme_image/suse_logo.png}}
 
 \begin{document}
@@ -101,7 +101,7 @@
 \begin{itemize}
 \item Material available @ \url{https://github.com/mudler/perl\_training}
 \item Modern Perl is an AWESOME reference - \url{http://modernperlbooks.com/books/modern_perl_2016/index.html}
-\item If you following the training with a laptop, install \verb Devel::REPL  ( \verb cpanm  \verb -n  \verb Devel::REPL     or   \verb zypper   \verb in   \verb perl-Devel-REPL , start it with: \verb re.pl  )
+\item If you are following the training with a laptop, install \verb Devel::REPL  ( \verb cpanm  \verb -n  \verb Devel::REPL     or   \verb zypper   \verb in   \verb perl-Devel-REPL , start it with: \verb re.pl  )
 \end{itemize}
 \end{frame}
 
@@ -114,9 +114,9 @@
       \item Performs quite well to be interpreted
       \item Lots of functionalities
   \end{itemize}
-  
+
   but\ldots cons:
-  
+
     \begin{itemize}
       \item TIMTOWTDI - good/bad thing
       \item Lot of caveats
@@ -137,7 +137,7 @@
 \item  The Compilation - Tree building (\textbf{use} and \textbf{no} declarations, Lexical declaration with no assigment. BEGIN are executed in FIFO, later interpreter is called again to re-evaluate CHECK blocks in LIFO)
 \item   The Code Generation Phase (optional) - if CHECK blocks where specified, Perl will generate intermediate C code (or Bytecode) compiling them so your machine can execute that image directly
 \item  The Parse Tree Reconstruction Phase (optional) - if Bytecode, then Perl needs to reconstruct the Parse tree before being able to execute
-\item Execution - The interpreter takes the parse tree and execute it.
+\item Execution - The interpreter takes the parsed tree and execute it.
 
 \end{itemize}
 \end{frame}
@@ -196,7 +196,7 @@ sub array_or_scalar_or_void {
 
 my @array  = array_or_scalar_or_void(); # yields 1 2 3 - list context
 my ($one, $two)  = array_or_scalar_or_void();
-my ($one, $two, undef)  = array_or_scalar_or_void(); 
+my ($one, $two, undef)  = array_or_scalar_or_void();
 my $three = array_or_scalar_or_void(); # returns 3 - scalar context
 
 array_or_scalar_or_void; # will print "Void context".
@@ -243,18 +243,70 @@ my $result = (2**2 + 38) . " is the answer";
 \end{lstlisting}
 
 \end{frame}
-\section{Perl Data Structures}
+\section{Perl Basic concepts and Data Structures}
+\begin{frame}[fragile]{Perl Basic concepts and Data structures - Identifiers }
 
-\begin{frame}[fragile]{Introduction - Perl Data structures - Overview}
-  Perl is a pecularial language, and have different kinds of data structures from other languages, and are prefixed with sigils ( \textbf{\$}, \textbf{@}, \textbf{\%}, \textbf{\*} \textbf{\&} ) :
-  
+Identifiers in Perl are everywhere, they are the name of the variables, functions, file handles,\ldots
+
+
+	Identifiers, like variables, can be static and leverage the Perl parser, or either be dynamic and generate them ``on-the-fly''.
+
+	\begin{lstlisting}[language=perl]
+    my $name;
+    my @_internal_packages;
+    my %packages;
+    sub my_func;
+    \end{lstlisting}
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl Basic concepts and Data structures - Identifiers }
+
+We can dynamically generate and set new variables (\textbf{TIMTOWTDI}):
+
+	\begin{lstlisting}[language=perl]
+$ my $var = 'b';
+b
+$ eval "\$$var = 'magic';";
+a
+$ print $b."\n";
+magic
+1
+\end{lstlisting}
+
+	\pause
+
+	\ldots but this is highly discouraged, don't try this at home
+	\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=6cm] at (current page.south east){
+   \includegraphics[width=5cm]{images/donottry.jpg}};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Basic concepts and Data structures - Sigils}
+  In Perl every variable identifier is prefixed with a sigil ( \textbf{\$}, \textbf{@}, \textbf{\%} ) :
+
   \begin{itemize}
       \item SCALAR - \textbf{\$}
       \item ARRAY - \textbf{@}
       \item HASH -  \textbf{\%}
-      \item CODE -  \textbf{\&}
+      \item CODE -  \textbf{\&} / for code, not variables
       \item GLOB  \textbf{\*} / Symbols - the meta-data type.
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Perl Basic concepts and Data structures - Variant sigil}
+The sigil in front of an identifier changes depending on it's usage, this is called \textbf{Variant sigils}.
+
+So context determines what type do you expect, and if it's more than one, the sigil helps to manipulate the data represented by the variable identifier.
+\begin{lstlisting}[language=perl]
+my @var   = ( qw ( a b c ) );
+my %hash  = (foo => 1, bar => 2);
+my $first = $var[0];
+my $bar   = $hash{bar};
+\end{lstlisting}
+
 \end{frame}
 
 \begin{frame}[fragile]{Perl Data structures - Overview}
@@ -271,8 +323,10 @@ sub { 1 } # code
 *var = \"bar" # Glob - ignore it for now
 \end{lstlisting}
 
-  it is only the context holding them together \ldots
+  it is the context holding them together \ldots !
 \end{frame}
+
+
 
 
 \begin{frame}[fragile]{Perl Data structures - Basic operations}
@@ -302,7 +356,7 @@ $a = 'it\'s awesome!';
 my $c = 'ends with a backslash, not a quote: \\';
 
 # Double quote forces perl to encode
-my $tab       = "\t"; 
+my $tab       = "\t";
 my $newline   = "\n";
 my $carriage  = "\r";
 my $backspace = "\b";
@@ -310,7 +364,7 @@ my $backspace = "\b";
 # Interpolation of scalar
 my $assertion = "$b $a"; # bar it's awesome!
 
-# qq -> double quotes, q -> single quotes - accepts delimiter 
+# qq -> double quotes, q -> single quotes - accepts delimiter
 my $doublequote         = qq{"What the hell" said him};
 my $singlequote         =  q^no need to escape "'" !^;
 my $different_delimiter =  q{Different delimeters};
@@ -334,7 +388,7 @@ my $ref_AoA = [
 ];
 
 print $ref_AoA->[1][1];   # prints "geeko"
-print $ref_AoA->[1]->[1];   # same 
+print $ref_AoA->[1]->[1];   # same
 \end{lstlisting}
 \end{frame}
 
@@ -389,6 +443,115 @@ print "@array\n"; # prints 'geeko is on vacation'
 \end{lstlisting}
 \end{frame}
 
+
+\begin{frame}[fragile]{Perl Basic concepts - Scoping}
+
+There are different kinda of scoping in Perl, we are going to revisit the most common ones.
+
+Access to variables is limited by scoping. Any pair of curly bracket is delimiting a scope (\verb { and \verb }) or entire files, usually variables are governed by Lexical Scope (as you see it). Files are providing new scope, not a package.
+
+This is also the main reason why you may find confusing package declaration. The ones that are inside a block, are creating a specific scope for the package (usually to protect it).
+
+Lexical scope governs variables that are ``\textit{my}-ized''
+% XXX: Add
+
+\end{frame}
+\begin{frame}[fragile]{Perl Basic concepts - Scoping}
+
+\begin{lstlisting}[language=perl]
+ # File Awesome.pm
+    {
+        package Awesome;
+        my $dolphin;
+        sub eat {
+            my $timer;
+            do {
+                my $whatever; # visible just here
+                ...
+            } while (@_);
+
+            for (@_) {
+                my $another_one; # just visible here
+                ...
+            }
+        }
+    }
+    # or
+    package Foo::Bar {
+        # new scope ...
+    }
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl Basic concepts - Scoping}
+
+Shadowing of a variable happens automatically if we re-declare it in a inner block:
+\begin{lstlisting}[language=perl]
+my $foo = 'bar';
+
+{
+    my $foo;
+
+    # play with $foo...
+}
+\end{lstlisting}
+
+The lexical inner scope hides the variable in the outer scope. Thus, at end of the execution of the code block \verb $foo  will go back to the original value.
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl Basic concepts - Scoping}
+
+\verb our  enforces lexical scope of the alias, so the fully qualified name is available everywhere, also outside of the package, but the lexical alias is visible only within its current scope.
+
+\begin{lstlisting}[language=perl]
+package Bar;
+our $foo = 'bar';
+
+# Outside reachable by $Bar::foo , inside by $foo .
+
+\end{lstlisting}
+
+\begin{alertblock}{Beware!}
+This is different from having an object instance with a related attribute: across the whole process executing the Perl code, Package scoped variables are the same.
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl Basic concepts - Dynamic Scoping}
+
+In Perl, there is also Dynamic and Static scoping ( provided respectively by \textbf{local} and \textbf{state} ).
+
+\begin{lstlisting}[language=perl]
+    our $var;
+
+    sub main {
+        say $var;
+        local $var = '$var set in main()'; # shadowing start
+        inner();
+    }
+
+    sub inner {
+        say $var;
+        deeper();
+    }
+    sub deeper {
+        say $var;
+    }
+
+    $var = 'outer';
+    main();
+    say $var;
+\end{lstlisting}
+\pause
+	\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=4cm] at (current page.south east){
+   \includegraphics[width=8cm]{images/scope_res.png}};
+\end{tikzpicture}
+\end{frame}
+
+
 \section{Killing old myths}
 
 \begin{frame}[fragile]{Killing old myths}
@@ -411,7 +574,7 @@ sort the flock (then, warn "the goats". kill "the sheep");
 
 
 \begin{frame}[fragile]{Killing old myths - \$\_}
-\textbf{\$\_ }is by definition the \textit{default scalar variable} or, called also \textit{topic variable}. 
+\textbf{\$\_ }is by definition the \textit{default scalar variable} or, called also \textit{topic variable}.
 You notice it when a variable is absent. \textbf{\$\_} is the English equivalent of \textit{it}.
 \begin{lstlisting}[language=perl]
 use feature 'say';
@@ -446,6 +609,26 @@ example2 qw(Only first element will be printed);
 
 \end{frame}
 
+\begin{frame}[fragile]{Killing old myths - \$\_}
+
+beware - \textbf{\$\_ } - inside functions is still the topic variable:
+
+\begin{lstlisting}[language=perl]
+sub topic_variable { print "$_\n"; }
+sub array_element  { print "$_[0]\n"; }
+
+$_ = undef;
+topic_variable(qw( a b c )); # prints 'Use of uninitialized value $_ ...'
+
+$_ = 'foo';
+topic_variable(qw( a b c )); # prints 'foo'
+
+array_element(qw( a b c ));   # prints 'a'
+
+\end{lstlisting}
+
+\end{frame}
+
 
 \begin{frame}[fragile]{Killing old myths - undef}
 
@@ -462,7 +645,7 @@ Evaluating undef in string context (e.g. interpolation);
 \begin{lstlisting}[language=perl]
     my $undefined;
     my $text = $undefined . ' bla ';
-#Yields the classic: 
+#Yields the classic:
 #    Use of uninitialized value $undefined in
 #    concatenation (.) or string...
 \end{lstlisting}
@@ -558,6 +741,38 @@ my %test = (1 => 1, 2 => 2, 3 => 3);
 # Can you tell why this example *works* but it is a bad practice?
 \end{lstlisting}
 
+\pause
+
+\ldots and we just killed one kitten
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=4cm] at (current page.south east){
+   \includegraphics[width=5cm]{images/kitten_dies.jpg}};
+\end{tikzpicture}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Pointers in Perl - a note on hash slices}
+
+\begin{lstlisting}[language=perl]
+@{$job->{settings}}{keys %$worker_settings} = values %$worker_settings; # BAD!
+\end{lstlisting}
+
+\begin{alertblock}{Hash keys}
+
+Grouping by Hashes key's is usually prone to error, since the ``\textbf{keys}'' and ``\textbf{values}'' barewords are not granting the same order of access of keys for the same hash.
+That means until we apply some order heuristic to the hash keys, we cannot rely on key hashes to perform any operation that is sensitive to key ordering.
+
+Tip: Sort the keys and (optionally) keep the index list for further later accessing:
+\begin{lstlisting}[language=perl]
+my %hash = %hash2;
+# ... e.g. we change %hash2 and we want to copy new keys values to original hash
+my @k = sort keys %hash;
+@hash{@k} = @hash2{@k}; # slice it!
+\end{lstlisting}
+
+\end{alertblock}
 
 \end{frame}
 
@@ -581,7 +796,7 @@ Perl has a large number of libraries giving out Object system in a OOTB fashion:
 What is MOP?
 \begin{itemize}
 \item Meta-Object Protocol
-\item API on top of Object 
+\item API on top of Object
 \item Abstraction to normal Object model, yielding to the Reflective property
 \end{itemize}
 Why Perl have so many object implementation, and why everything is so complicated?
@@ -598,6 +813,7 @@ OOP State in Perl, key points:
 \begin{itemize}
 \item Packages != Objects
 \item Packages can bring Objects to you
+\item Packages are just symbol tables
 \item Basic OOP in Perl allows you to construct your own OOP Model
 \item Perl is not hiding nothing to you
 \item DO NOT create Packages that are named all lowercase (reserved to perl pragmas), or all uppercase (Built-in types)
@@ -635,6 +851,74 @@ Scopes are determined by Files, by packages thru lexical scopes as you can creat
 \end{frame}
 
 
+
+\begin{frame}[fragile]{Perl Packages - Are not objects!}
+As long as we are not using a new scope, in this example \textbf{both} packages will have the bar symbol.
+
+\begin{lstlisting}[language=perl]
+...
+    package Baz::Bar;
+    our $bar = 'foo';
+    package Baz::Foo;
+    # $bar is visible for Baz::Foo
+...
+\end{lstlisting}
+
+\pause
+To escape from it, we need to create different scopes to hide the symbols between the packages.
+
+\end{frame}
+
+\begin{frame}[fragile]{Perl Packages - Are not objects!}
+With REPL is easy to check this behavior:
+
+\begin{lstlisting}[language=perl]
+$ package Baz::Foo; our $bar = 'foo'; package Baz::Foo;
+foo
+$ print "symbol : $_ \n" for keys %Baz::Bar::;
+symbol : BEGIN
+symbol : load_plugin # Stuff injected by REPL
+symbol : bar
+symbol : __ANON__
+
+$ print "symbol : $_ \n" for keys %Baz::Foo::;
+symbol : BEGIN
+symbol : load_plugin
+symbol : bar
+symbol : __ANON__
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Perl Packages - Are not objects!}
+
+Solution: Wrap packages in different scope blocks.
+
+\begin{lstlisting}[language=perl]
+{
+    package Baz::Bar;
+    our $bar = 'foo';
+}
+{
+    package Baz::Foo;
+    our $answer = 42;
+    # $bar is not visible anymore
+}
+
+# It yields:
+# $ print "symbol : $_ \n" for keys %Baz::Foo::;
+# symbol : answer
+
+# $ print "symbol : $_ \n" for keys %Baz::Bar::;
+# symbol : bar
+
+
+\end{lstlisting}
+
+\end{frame}
+
+
 \begin{frame}{Package modules}
 
 What makes a package inherit methods from another one?
@@ -643,11 +927,11 @@ What makes a package inherit methods from another one?
 Eeach package contains a special array called \textbf{ISA}. The \textbf{ISA} array contains a list of that class's parent classes, if any. This array is examined when Perl does method resolution.
 \end{alertblock}
 
-Let's have a look on the fundamentals of OOP now.
+Let's have a brief tour on the OOP fundamentals now.
 \end{frame}
 
 \begin{frame}[fragile]{Perl Objects - Introduction}
-Everything starts with the \textbf{bless} keyword.
+Everything in the Perl OOP world starts with the \textbf{bless} keyword.
 \begin{lstlisting}[language=perl]
 bless REF,CLASSNAME
 \end{lstlisting}
@@ -702,18 +986,18 @@ Foo->newBar()->printer("Hello");
 {
 package Cat;
 use Mojo::Base -base;
- 
+
 has name => 'Nyan';
 has ['age', 'weight'] => 4;
-} 
+}
 
 {
 package Tiger;
 use Mojo::Base 'Cat';
- 
+
 has friend  => sub { Cat->new }; # Lazy-loaded if no value is set!
 has stripes => 42;
-} 
+}
 # ...
 my $mew = Cat->new(name => 'Longcat');
 say $mew->age;
@@ -721,9 +1005,9 @@ say $mew->age(3)->weight(5)->age;
 \end{lstlisting}
 
 \end{frame}
- 
+
  \section{Map fun}
- 
+
  \begin{frame}[fragile]{Map fun - Schwartzian Transform}
 The first known online appearance of the Schwartzian Transform is a December 16, 1994 posting by Randal Schwartz.
 
@@ -741,23 +1025,23 @@ How to sort this list by last name?
 
 
  \begin{frame}[fragile]{Map fun - Schwartzian Transform}
- 
+
  \begin{itemize}
      \item Lisp roots
      \item Compact transformation
      \item Caches expensive calculations
      \item Variables can be elided
-     \item Pipeline of map-sort-map transforms a data structure into another form easier for sorting and then transforms it back into the first — or another — form 
+     \item Pipeline of map-sort-map transforms a data structure into another form easier for sorting and then transforms it back into the first — or another — form
  \end{itemize}
- 
+
  We have then to sort the list by it's values, not by the keys\ldots
  \end{frame}
 
 
  \begin{frame}[fragile]{Map fun - Schwartzian Transform}
- 
+
  Let's assume that we have parsed the list before as a hash (optional, but makes easier to read)
- 
+
 \begin{lstlisting}[language=perl]
 my %name_list = (
     'adjn:Joshua Ng' => 'Ng',
@@ -774,7 +1058,7 @@ my @sorted_names = sort values %name_list;
 
 
  \begin{frame}[fragile]{Map fun - Schwartzian Transform}
- 
+
  Let's  first convert the hash into a list of data structures that will keep  the information, and will also allow us to sort it easier:
 \begin{lstlisting}[language=perl]
  my @data = map  { [ $_, $name_list{$_} ] } keys %name_list;
@@ -784,7 +1068,7 @@ Then we sort it by the hash value contained in that array:
     my @sorted_data = sort { $a->[1] cmp $b->[1] } @data;
 \end{lstlisting}
 \begin{alertblock}{sort}
-The code block supplied to sort receives arguments in \verb $a  and   \verb $b , that are package-scoped variables.. (See perldoc -f sort) 
+The code block supplied to sort receives arguments in \verb $a  and   \verb $b , that are package-scoped variables.. (See perldoc -f sort)
 \end{alertblock}
  \end{frame}
 
@@ -808,7 +1092,7 @@ Reading from right to left: For each key in the hash create an anonymous array o
 \pause
 \begin{tikzpicture}[remember picture,overlay]
     \node[xshift=3cm,yshift=-3.5cm] at (current page.north west){
-    \includegraphics[width=4cm]{images/deleted_code.jpg}};
+    \includegraphics[width=4.5cm]{images/deleted_code.jpg}};
 \end{tikzpicture}
 
 \end{frame}
@@ -830,7 +1114,7 @@ Perl has idioms, some of them are neat, some of them looks like casting spells. 
 Some of them are common rules:
 
 \begin{itemize}
-    \item Object are represented (inside methods) as \verb $self
+    \item Object are represented (inside methods) as \verb $self , packages as \verb $class
     \item Named Parameters prefered vs anonym ones e.g. \verb func(option=>1,option2=>2)
     \item Hash or Hash Ref? To avoid odd sized list to be interpreted as Hash, better Hashrefs (also for inspection).
 \end{itemize}
@@ -839,16 +1123,161 @@ Some of them are driven by design - we will look at few examples of them.
 \end{frame}
 
 
+\begin{frame}[fragile]{Idioms - Named parameters}
+It is usual doing this:
+
+\begin{lstlisting}[language=perl]
+    i_am_doing_awesome_things(
+        foobar        => 1,
+        baz           => 1,
+        answer        => 42,
+        dolphins      => 'So Long, and Thanks for All the Fish',
+    );
+
+    # As long as it is used like this, there is no problemo ..
+    sub i_am_doing_awesome_things {
+        my %args    = @_;
+        my $answer = $args{answer};
+        ...
+
+\end{lstlisting}
+\pause
+
+\ldots and there we go, another one died
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=4cm] at (current page.south east){
+   \includegraphics[width=5cm]{images/kitten_dies.jpg}};
+\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}[fragile]{Idioms - Named parameters}
+Why? Because weird things will start to happen when we feed the function with an odd-sized list!
+\begin{lstlisting}[language=perl]
+    i_am_doing_awesome_things(
+        foobar        => 1,
+       'baz'
+    );
+
+    sub i_am_doing_awesome_things {
+        my %args    = @_;
+        my $answer = $args{answer};
+        print "$answer\n";
+    }
+
+    # And now we have 'Odd number of elements in hash assignment at ...'
+
+\end{lstlisting}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Idioms - Named parameters}
+Our function code is not defensive enough from arguments that may come from the caller.
+Let's see a variation to support both hashref and hashes.
+\begin{lstlisting}[language=perl]
+    # Those are all valid now!
+    i_am_doing_awesome_things( { foobar => 1 });
+    i_am_doing_awesome_things( foobar => 1 );
+    i_am_doing_awesome_things('foobar', 1);
+
+    # but this still will trigger same error!
+    i_am_doing_awesome_things('foobar','baz','boo');
+
+sub i_am_doing_awesome_things {
+    my ($first_argument, @others) = @_;
+    my %args;
+
+    if(ref $first_argument eq 'HASH') {
+        %args = %{$first_argument};
+    } else {
+        %args = ($first_argument,@others);
+    }
+    print Dumper(\%args)."\n";
+}
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Idioms - Named parameters}
+Let's try to getting rid of \textbf{\%args} at all, reducing it to a normal function with positional parameters.
+\begin{lstlisting}[language=perl]
+    i_am_doing_awesome_things( { answer => 42 } );
+
+    # No errors - but isn't doing what we expect.
+    i_am_doing_awesome_things( 'foo', 'bar', 'baz' );
+    i_am_doing_awesome_things( 'answer', '42' );
+    i_am_doing_awesome_things( answer => 42 );
+
+    sub i_am_doing_awesome_things {
+        my ($first_argument, @others) = @_;
+        my @expected_keys = qw(foo bar answer);
+        my ($foo,$bar,$answer);
+        if(ref $first_argument eq 'HASH') {
+            ($foo,$bar,$answer) = @{$first_argument}{@expected_keys};
+        } else {
+            ($foo,$bar,$answer) = ($first_argument, @others);
+        }
+        print "$foo, $bar, $answer\n";
+    }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Idioms - Named parameters}
+Let's start shrinking the code and cut all those variable declarations:
+\pause
+
+
+\begin{lstlisting}[language=perl]
+
+    sub i_am_doing_awesome_things {
+         my ( $foo, $bar, $another ) = ref $_[0] eq 'HASH' ? (@{$_[0]}{qw(foo bar answer)}) : @_;
+
+         print "$foo and $bar and $another!\n";
+    }
+\end{lstlisting}
+
+\begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=-3cm,yshift=2cm] at (current page.south east){
+   \includegraphics[width=3cm]{images/pewpewpew.jpg}};
+\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}[fragile]{Idioms - Named parameters}
+So far we got a fair solution, but still will behave weirdly when we are passing a list. Finally, let's slightly revisit it to support all expression forms:
+
+\pause
+
+\begin{lstlisting}[language=perl]
+    use feature 'say';
+
+    i_am_doing_awesome_things('foo','bar','baz');
+    i_am_doing_awesome_things( 'answer', '42' );
+    i_am_doing_awesome_things( answer => 42 );
+    i_am_doing_awesome_things( { answer => 42 } );
+
+    # They are all equivalent and works as expected now:
+    sub i_am_doing_awesome_things {
+        my %args = @_ > 1 && @_ % 2 == 0 ? @_ : ref $_[0] eq 'HASH' ? %{ $_[0] } : ();
+        my $answer = $args{answer};
+        say $args{answer} if $args{answer};
+    }
+\end{lstlisting}
+
+
+\end{frame}
 
 \begin{frame}[fragile]{Idioms - Globs - Automa(g/t)ic assignment }
 
 \begin{lstlisting}[language=perl]
 
-*var = \"test";                      
- 
+*var = \"test";
+
 no strict 'refs';
 
-print ${*{"var"}{SCALAR}}."\n";    
+print ${*{"var"}{SCALAR}}."\n";
 
 \end{lstlisting}
 \pause
@@ -867,6 +1296,8 @@ Being able to manipulate and force context, allows us to have few tricks:
 \begin{lstlisting}[language=perl]
 my $count = ()= @array; # Forces list context
 my $count = scalar @array; # Forces scalar context
+my $count = @array; # Coercion, same result
+
 my $one = (qw(1 2 3))[0]; # Force list context and retrieve an element in array
 
 my $string = '42 is the right answer';
@@ -983,8 +1414,7 @@ Will be able the Perl \textbf{GC} to reap all the unused memory? - short answer,
 \end{frame}
 
 \begin{frame}[fragile]{Common pitfalls - Avoid to leak memory in your code!}
-Use weaken to escape to circular references, so GC doesn't loop while trying to clean up the references out of scope.
-
+Solution: use weaken to escape to circular references, so GC doesn't loop while trying to clean up the references out of scope. As a mnemonic roule, it's best you weaken the first variable that gets out of scope.
 
 \begin{lstlisting}[language=perl]
 use Scalar::Util 'weaken';
@@ -1042,7 +1472,7 @@ sub circular_ref {
 
 
 \begin{frame}[fragile]{Importing}
-The Perl \textbf{use} built-in call automatically the \verb import() function on the class that is supplied. Modules then, can provide their own import that can make visible to the caller some or all functions in it's Package scope. 
+The Perl \textbf{use} built-in call automatically the \verb import() function on the class that is supplied. Modules then, can provide their own import that can make visible to the caller some or all functions in it's Package scope.
 
 So:
 
@@ -1068,7 +1498,7 @@ But strict is a pragma, which is another world, with other effects.
 
 
 \begin{frame}[fragile]{Killing old myths - Exporter}
-At this point - the role of Exporter should be a bit more easier to gasp. 
+At this point - the role of Exporter should be a bit more easier to gasp.
 
 \begin{itemize}
     \item The \textbf{use} pragma is calling \verb import()  functions on the Specified class
@@ -1095,7 +1525,7 @@ use parent Exporter; # Again, do not need to inherit completely from it.
 use Exporter 'import'; # Compact and exactly what it's just needed! Exporter's import();
 \end{lstlisting}
 
-Exporter \verb import() is looking into \verb @EXPORT_OK   and in \verb @EXPORT   for functions to export into the caller's namespace. 
+Exporter \verb import() is looking into \verb @EXPORT_OK   and in \verb @EXPORT   for functions to export into the caller's namespace.
 
 
 \end{frame}
@@ -1106,7 +1536,7 @@ Exporter \verb import() is looking into \verb @EXPORT_OK   and in \verb @EXPORT 
 How hard than can be to replicate the Exporter's functionalities? \\
 
 
-Can't we make our own Exporter as well? 
+Can't we make our own Exporter as well?
 
 \pause
 
@@ -1158,7 +1588,7 @@ use strict;
 sub import {
     my $pkg = caller; # who's calling us?
     no strict 'refs'; # Avoid strict to be dushbag with symbolic dereference
-    
+
     foreach my $glob (keys %CustomExporter::) { # Get all meta data-types in the package
         next if not defined *{$CustomExporter::{$glob}}{CODE} # We want to put in caller only functions
                 or $glob eq 'import'; # But not import itself
@@ -1184,7 +1614,7 @@ sub import {
 
 The Liskov substitution principle suggest that an object should be as more general as possible with the expectations, and at least as specific about what it produces as the object it replaces.
 
-What this means? 
+What this means?
 Suppose we have two classes:
 \begin{lstlisting}[language=perl]
 {
@@ -1211,12 +1641,45 @@ local is essential to managing Perl's magic global variables. Scoping is importa
 
     # or
     my $file; { local $/; $file = <$fh> };
-    
+
     \end{lstlisting}
 
     \begin{alertblock}{\$/}
     \$/ is a string of zero or more characters which denotes the end of a record when reading input a record at a time. By default, this is your platform-specific newline character sequence. See Modern perl for a complete reference
     \end{alertblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Killing old myths - Local and scoping}
+
+local is also useful when we want to shadow temporary a variable for sub-sequent code.
+
+\pause
+e.g. To catch an error rised during an eval execution we would write:
+
+    \begin{lstlisting}[language=perl]
+    ...
+    eval "...";
+    die $@ if $@;
+    \end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Killing old myths - Local and scoping}
+
+But in this way, we allow preceding error to be caught by our \textbf{die} statement, so we shadow the \textbf{\$@} variable and check for the errors raised on those statements.
+
+    \begin{lstlisting}[language=perl]
+    ...
+    { # create a new scope
+        local $@; # Now $@ is shadowed, so if it was containing errors of previous calls, now it's back to default
+        eval "...";
+        die $@ if $@;
+    }
+
+    # now $@ is back to the previous value
+
+    \end{lstlisting}
 
 \end{frame}
 
